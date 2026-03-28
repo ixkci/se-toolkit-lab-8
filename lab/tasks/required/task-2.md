@@ -58,6 +58,15 @@ In Task 1 you ran `nanobot agent` from the VM terminal. For production, nanobot 
 
    - **`Dockerfile`** — multi-stage build with `uv` (same pattern as `backend/Dockerfile`). Final CMD: `python /app/nanobot/entrypoint.py`.
 
+     > **Hint:** Before writing `nanobot/Dockerfile`, inspect the existing
+     > Dockerfiles in this repository, especially [`backend/Dockerfile`](../../../backend/Dockerfile)
+     > and [`qwen-code-api/Dockerfile`](../../../qwen-code-api/Dockerfile).
+     > Reuse the established patterns for:
+     > - multi-stage `uv` builds
+     > - copying workspace or package files in the right order
+     > - installing dependencies before the application package when helpful
+     > - switching to a non-root runtime user in the final image
+
    By the end of Part A, you should have modified at least:
 
    - `nanobot/entrypoint.py`
@@ -67,6 +76,8 @@ In Task 1 you ran `nanobot agent` from the VM terminal. For production, nanobot 
 3. Uncomment the scaffolded `nanobot` service block in `docker-compose.yml` and adapt it to your implementation:
 
    - Keep the build context at `./nanobot` with `additional_contexts: workspace: .` so the image can access `mcp/` and the root project.
+   - If you bind-mount local source directories for live editing, run the container as the host user (for example with `user: "${HOST_UID}:${HOST_GID}"`) so both the host and the container can edit the same files without ownership conflicts. On the VM, get these values with `id -u` and `id -g`, then put them into your Docker env file as `HOST_UID=...` and `HOST_GID=...`.
+   - You do not have to mount the whole repo into `/app`. A cleaner setup is to mount only the directories nanobot needs to edit or read, for example `./nanobot:/app/nanobot`, `./mcp:/app/mcp`, `./nanobot-websocket-channel:/app/nanobot-websocket-channel`, and read-only docs like `./wiki:/app/wiki:ro`.
    - Check that the environment variables match what your `entrypoint.py` reads.
    - Notice that the scaffold uses container-local URLs such as `http://backend:...` and `http://qwen-code-api:...` rather than the VM-shell `localhost` values from Task 1.
    - Keep it on `lms-network`.
