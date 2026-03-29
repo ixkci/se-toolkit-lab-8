@@ -181,8 +181,7 @@ nanobot-1  | 2026-03-28 22:41:26.646 | INFO     | nanobot.agent.loop:run:280 - A
 
 ## Task 2B — Web client
 
-![alt text](image.png)
-Note: The webchat interface and WebSockets are functioning correctly (messages reach the agent). However, the Qwen Code API proxy returns a 500 error because the Alibaba upstream server is returning a WAF (aliyun_waf) HTML challenge instead of a JSON token, blocking LLM generation. The nanobot deployment and MCP tools are correctly configured.
+![alt text](image-1.png)
 
 ## Task 3A — Structured logging
 
