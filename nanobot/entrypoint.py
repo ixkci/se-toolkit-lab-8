@@ -35,8 +35,8 @@ def main():
         "command": "python",
         "args": ["-m", "mcp_webchat"],
         "env": {
-            "UI_RELAY_URL": f"http://localhost:{os.environ.get('NANOBOT_WEBCHAT_CONTAINER_PORT', '8080')}",
-            "UI_RELAY_TOKEN": os.environ.get("NANOBOT_ACCESS_KEY", "")
+            "NANOBOT_UI_RELAY_URL": f"http://127.0.0.1:{os.environ.get('NANOBOT_UI_RELAY_PORT', '8766')}",
+            "NANOBOT_UI_RELAY_TOKEN": os.environ.get("NANOBOT_ACCESS_KEY", "")
         }
     }
 
