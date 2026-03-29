@@ -1,11 +1,8 @@
 """Router for item endpoints — reference implementation."""
-
 import logging
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlmodel.ext.asyncio.session import AsyncSession
-
 from lms_backend.database import get_session
 from lms_backend.db.items import create_item, read_item, read_items, update_item
 from lms_backend.models.item import ItemCreate, ItemRecord, ItemUpdate
@@ -20,13 +17,13 @@ async def get_items(session: AsyncSession = Depends(get_session)):
     try:
         return await read_items(session)
     except Exception as exc:
-        logger.warning(
-            "items_list_failed_as_not_found",
-            extra={"event": "items_list_failed_as_not_found"},
+        logger.error(
+            "items_list_failed",
+            extra={"event": "items_list_failed", "error": str(exc)},
         )
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Items not found",
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Service unavailable: {exc}",
         ) from exc
 
 

@@ -237,16 +237,95 @@ This is the same intermittent DNS/networking issue affecting the LMS sync pipeli
 
 ## Task 4A — Multi-step investigation
 
-<!-- Paste the agent's response to "What went wrong?" showing chained log + trace investigation -->
+## Root Cause: Database Connection Failure
+
+The LMS backend is failing due to **DNS resolution errors** when trying to connect to the PostgreSQL database.
+
+### Evidence from Logs & Traces
+
+| Metric | Value |
+|--------|-------|
+| **Error Count (1h)** | 17 errors |
+| **Error Type** | `socket.gaierror` - DNS resolution failure |
+| **Error Messages** | `[Errno -3] Temporary failure in name resolution` / `[Errno -2] Name or service not known` |
+| **Failed Operations** | `POST /pipeline/sync`, `GET /items/` |
+| **Avg Duration** | 15-20 seconds (timeout) |
+
+### Trace Analysis
+
+The trace `c04b79cdaef05fb44c511ddc91197175` shows:
+- `POST /pipeline/sync` (20.8s) ❌
+  - `GET` (668ms) ✅ - External API call succeeded
+  - `connect` (20s) ❌ - **Database connection failed**
+
+### What's Happening
+
+1. The LMS service can reach external APIs successfully
+2. When it tries to connect to PostgreSQL, DNS resolution fails
+3. All database queries (`select` on `item` table) fail with the same error
+
+### Likely Causes
+
+- 🖥️ **PostgreSQL service is down** or not running
+- 🌐 **DNS/network issue** - the database hostname cannot be resolved
+- ⚙️ **Misconfigured connection string** - wrong database host in environment variables
+- 🔗 **Container networking issue** - services can't communicate
+
+### Recommended Actions
+
+1. Check if the PostgreSQL container/service is running
+2. Verify the database connection string environment variable
+3. Check DNS resolution from within the LMS container
+4. Review container network configuration
+
+Would you like me to help investigate any of these areas further?
 
 ## Task 4B — Proactive health check
 
-<!-- Screenshot or transcript of the proactive health report that appears in the Flutter chat -->
+🚨 **LMS Health Check Alert**
+
+**Status:** Errors detected in last 2 minutes
+
+**Error Count:** 1 ERROR
+
+**Issue:** Database connection failure
+- **Error Type:** `socket.gaierror: [Errno -3] Temporary failure in name resolution`
+- **Endpoint:** `POST /pipeline/sync`
+- **Root Cause:** DNS resolution failure when connecting to PostgreSQL database
+- **Duration:** ~21 seconds before timeout
+
+**Affected Traces:** Multiple recent traces show errors on both `/pipeline/sync` and `/items/` endpoints
+
+**Recommendation:** Check database hostname configuration and DNS resolution for the PostgreSQL connection.
 
 ## Task 4C — Bug fix and recovery
 
-<!-- 1. Root cause identified
-     2. Code fix (diff or description)
-     3. Post-fix response to "What went wrong?" showing the real underlying failure
-     4. Healthy follow-up report or transcript after recovery -->
+### Root cause
+In `backend/src/lms_backend/routers/items.py`, the `get_items` handler caught all exceptions with a broad `except Exception` block and always returned `404 Not Found` with "Items not found" — hiding the real database failure.
 
+### Fix
+Changed the exception handler to return `503 Service Unavailable` with the real error message, and changed log level from `WARNING` to `ERROR`:
+```python
+# Before (buggy)
+except Exception as exc:
+    logger.warning("items_list_failed_as_not_found", ...)
+    raise HTTPException(status_code=404, detail="Items not found") from exc
+
+# After (fixed)
+except Exception as exc:
+    logger.error("items_list_failed", extra={"event": "items_list_failed", "error": str(exc)})
+    raise HTTPException(status_code=503, detail=f"Service unavailable: {exc}") from exc
+```
+
+### Post-fix failure check
+After redeploy with postgres stopped, agent reported:
+- **HTTP Status:** `503 Service Unavailable` (previously `404`)
+- **Error Type:** `[Errno -2] Name or service not known`
+- **Affected Endpoint:** `GET /items/`
+- Real database failure now visible in logs and traces
+
+### Healthy follow-up
+After postgres restarted, scheduled health check reported:
+
+**🩺 LMS Health Check** — ✅ System looks healthy
+- Learning Management Service errors (2m): 0
