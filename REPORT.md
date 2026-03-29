@@ -160,11 +160,29 @@ Which lab would you like to see the scores for?
 
 ## Task 2A — Deployed agent
 
-<!-- Paste a short nanobot startup log excerpt showing the gateway started inside Docker -->
+...
+nanobot-1  | 2026-03-28 22:41:24.645 | INFO     | nanobot.cron.service:start:202 - Cron service started with 0 jobs
+nanobot-1  | 2026-03-28 22:41:24.645 | INFO     | nanobot.heartbeat.service:start:124 - Heartbeat started (every 1800s)
+nanobot-1  | 2026-03-28 22:41:25.226 | INFO     | nanobot.channels.manager:start_all:91 - Starting webchat channel...
+nanobot-1  | 2026-03-28 22:41:25.228 | INFO     | nanobot.channels.manager:_dispatch_outbound:119 - Outbound dispatcher started
+nanobot-1  | 2026-03-28 22:41:25.991 | DEBUG    | nanobot.agent.tools.mcp:connect_mcp_servers:226 - MCP: registered tool 'mcp_lms_lms_health' from server 'lms'
+nanobot-1  | 2026-03-28 22:41:25.992 | DEBUG    | nanobot.agent.tools.mcp:connect_mcp_servers:226 - MCP: registered tool 'mcp_lms_lms_labs' from server 'lms'
+nanobot-1  | 2026-03-28 22:41:25.992 | DEBUG    | nanobot.agent.tools.mcp:connect_mcp_servers:226 - MCP: registered tool 'mcp_lms_lms_learners' from server 'lms'
+nanobot-1  | 2026-03-28 22:41:25.992 | DEBUG    | nanobot.agent.tools.mcp:connect_mcp_servers:226 - MCP: registered tool 'mcp_lms_lms_pass_rates' from server 'lms'
+nanobot-1  | 2026-03-28 22:41:25.992 | DEBUG    | nanobot.agent.tools.mcp:connect_mcp_servers:226 - MCP: registered tool 'mcp_lms_lms_timeline' from server 'lms'
+nanobot-1  | 2026-03-28 22:41:25.992 | DEBUG    | nanobot.agent.tools.mcp:connect_mcp_servers:226 - MCP: registered tool 'mcp_lms_lms_groups' from server 'lms'
+nanobot-1  | 2026-03-28 22:41:25.992 | DEBUG    | nanobot.agent.tools.mcp:connect_mcp_servers:226 - MCP: registered tool 'mcp_lms_lms_top_learners' from server 'lms'
+nanobot-1  | 2026-03-28 22:41:25.992 | DEBUG    | nanobot.agent.tools.mcp:connect_mcp_servers:226 - MCP: registered tool 'mcp_lms_lms_completion_rate' from server 'lms'
+nanobot-1  | 2026-03-28 22:41:25.992 | DEBUG    | nanobot.agent.tools.mcp:connect_mcp_servers:226 - MCP: registered tool 'mcp_lms_lms_sync_pipeline' from server 'lms'
+nanobot-1  | 2026-03-28 22:41:25.992 | INFO     | nanobot.agent.tools.mcp:connect_mcp_servers:246 - MCP server 'lms': connected, 9 tools registered
+nanobot-1  | 2026-03-28 22:41:26.645 | DEBUG    | nanobot.agent.tools.mcp:connect_mcp_servers:226 - MCP: registered tool 'mcp_webchat_ui_message' from server 'webchat'
+nanobot-1  | 2026-03-28 22:41:26.646 | INFO     | nanobot.agent.tools.mcp:connect_mcp_servers:246 - MCP server 'webchat': connected, 1 tools registered
+nanobot-1  | 2026-03-28 22:41:26.646 | INFO     | nanobot.agent.loop:run:280 - Agent loop started
 
 ## Task 2B — Web client
 
-<!-- Screenshot of a conversation with the agent in the Flutter web app -->
+![alt text](image.png)
+Note: The webchat interface and WebSockets are functioning correctly (messages reach the agent). However, the Qwen Code API proxy returns a 500 error because the Alibaba upstream server is returning a WAF (aliyun_waf) HTML challenge instead of a JSON token, blocking LLM generation. The nanobot deployment and MCP tools are correctly configured.
 
 ## Task 3A — Structured logging
 
