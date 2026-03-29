@@ -39,6 +39,14 @@ def main():
             "NANOBOT_UI_RELAY_TOKEN": os.environ.get("NANOBOT_ACCESS_KEY", "")
         }
     }
+    mcp["obs"] = {
+        "command": "python",
+        "args": ["-m", "mcp_obs"],
+        "env": {
+            "VICTORALOGS_URL": os.environ.get("NANOBOT_VICTORIALOGS_URL", "http://victorialogs:9428"),
+            "VICTORIATRACES_URL": os.environ.get("NANOBOT_VICTORIATRACES_URL", "http://victoriatraces:10428")
+        }
+    }
 
     # Настройки канала webchat
     webchat = config.setdefault("channels", {}).setdefault("webchat", {})
